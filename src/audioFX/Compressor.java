@@ -167,7 +167,7 @@ public class Compressor extends AudioFX {
 		 for(int i = 0; i < integral.length; i++){
 			 integral[i] = (int) (integral[i] * factor);
 		 }
-		 integral[0] = 0;
+		 //integral[0] = 0;
 		 
 		 System.out.println("limited: " + (double)limited / integral.length);
 		 System.out.println("original Zahl: " + matchedHistogram[(int) (Short.MAX_VALUE * 0.2)]);

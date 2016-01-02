@@ -175,7 +175,7 @@ public class SpectralAnalyzer extends AudioFX {
 	public int[][] calInverseFFTofWholeSong(List<Complex[]> polarSpectrumsLeft, List<Complex[]> polarSpectrumsRight) {
 
 		List<int[]> listOfLeftSegments = getInverseFFTOfChannel(polarSpectrumsLeft);
-		List<int[]> listOfRightSegments = getInverseFFTOfChannel(polarSpectrumsLeft);
+		List<int[]> listOfRightSegments = getInverseFFTOfChannel(polarSpectrumsRight);
 
 		int lengthOfAudio = (polarSpectrumsLeft.size() + 1) * (polarSpectrumsLeft.get(0).length - 1);
 

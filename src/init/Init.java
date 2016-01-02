@@ -32,7 +32,7 @@ import audioHelpers.AudioStreamConverter;
 
 public class Init {
 
-	String outFileName = "resources/CLHE Test 24.wav";
+	String outFileName = "resources/freedom_whole_mastering 05.wav";
 	File fileOut = new File(outFileName);
 
 	Limiter limiter = new Limiter();
@@ -56,8 +56,8 @@ public class Init {
 		// String fileName = "resources/LPP.wav";
 		// String fileNameToFilter = "resources/DK2_126_WKicks22.wav";
 		// String aimSpecFileName = "resources/DK2_126_001_WoKicks22.wav";
-		String fileNameToFilter = "resources/jeanLuc_short 01.wav";
-		String aimSpecFileName = "resources/birthday_short 01.wav";
+		String fileNameToFilter = "resources/freedom_whole 01.wav";
+		String aimSpecFileName = "resources/alexa_short 01.wav";
 		// String fileNameToFilter = "resources/WorkD.wav";
 		// String aimSpecFileName = "resources/WorkD.wav";
 		// String fileNameToFilter = "";

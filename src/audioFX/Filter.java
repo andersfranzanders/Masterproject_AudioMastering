@@ -35,12 +35,29 @@ public class Filter {
 
 		return multiplicatedSpectrum;
 	}
+	
+	private Complex[] multPolarSpectrums2(Complex[] signalSpectrum, Complex[] kernelSpectrum) {
+
+		if (signalSpectrum.length != kernelSpectrum.length) {
+			System.out.println("Spectrums are not of Equal length!");
+		}
+
+		for (int i = 0; i < signalSpectrum.length; i++) {
+			signalSpectrum[i].setRe(signalSpectrum[i].re() * kernelSpectrum[i].re());
+			signalSpectrum[i].setIm(signalSpectrum[i].im() + kernelSpectrum[i].im());
+			
+		}
+		
+
+		return signalSpectrum;
+	}
 
 	private List<Complex[]> multWholeSong(List<Complex[]> wholeSongAsSpecSegments, Complex[] polarSpecOfKernel) {
 		List<Complex[]> wholeMultiplicatedSignal = new ArrayList<Complex[]>();
 
 		for (Complex[] polarSpecSegment : wholeSongAsSpecSegments) {
-			Complex[] multiplicatedSegment = multPolarSpectrums(polarSpecSegment, polarSpecOfKernel);
+			//Complex[] multiplicatedSegment = multPolarSpectrums(polarSpecSegment, polarSpecOfKernel);
+			Complex[] multiplicatedSegment = multPolarSpectrums2(polarSpecSegment, polarSpecOfKernel);
 			wholeMultiplicatedSignal.add(multiplicatedSegment);
 		}
 
