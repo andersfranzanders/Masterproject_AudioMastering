@@ -115,8 +115,30 @@ public class Compressor extends AudioFX {
 		int[] matchedHistogramOfX = matchHistograms(cumulativeHistogramX, cumulativeHistogramY);
 		histoViz.visualizeHistogram(matchedHistogramOfX, "Originale Transferfunction");
 		int[] decreasedHisto = decreaseSlopeOfTranserFunction(matchedHistogramOfX, 2);
+		int[] entNoisedTransfer = decreaseNoiseOfTranserFunction(decreasedHisto, 3);
 
-		applyMatchedHistogram(x, decreasedHisto, channel);
+		applyMatchedHistogram(x, entNoisedTransfer, channel);
+	}
+
+	private int[] decreaseNoiseOfTranserFunction(int[] transferFunc, int m) {
+
+		int[] entNoisedTransfer = new int[transferFunc.length];
+
+		for (int i = 0; i < transferFunc.length; i++) {
+			int valueFromTransfer = transferFunc[i];
+			int linearValue = i * m;
+			if (linearValue < valueFromTransfer) {
+				entNoisedTransfer[i] = linearValue;
+			} else {
+				entNoisedTransfer[i] = valueFromTransfer;
+			}
+
+		}
+
+		HistoViz histoViz2 = new HistoViz();
+		histoViz2.visualizeHistogram(entNoisedTransfer, "Transfer without Noise");
+		return entNoisedTransfer;
+
 	}
 
 	private int[] decreaseSlopeOfTranserFunction(int[] matchedHistogram, int limit) {
@@ -125,7 +147,7 @@ public class Compressor extends AudioFX {
 
 		int[] ableitung = new int[matchedHistogram.length];
 		int offset = matchedHistogram[1];
-		
+
 		for (int i = 0; i < (matchedHistogram.length - 1); i++) {
 			int current = matchedHistogram[i];
 			int prev = 0;
@@ -134,50 +156,56 @@ public class Compressor extends AudioFX {
 			}
 			ableitung[i] = current - prev;
 		}
-		
-		//HistoViz histoViz = new HistoViz();
-		//histoViz.visualizeHistogram(ableitung, "Ableitung");
-		
-		//limit Ableitung
+
+		// HistoViz histoViz = new HistoViz();
+		// histoViz.visualizeHistogram(ableitung, "Ableitung");
+
+		// limit Ableitung
 		int limited = 0;
 		int[] limitedAbleitung = new int[ableitung.length];
-		for(int i = 0; i < ableitung.length; i++){
+		for (int i = 0; i < ableitung.length; i++) {
 			int value = ableitung[i];
-			if(value > limit){
-				value = limit;
-				limited++;
-			}
+		//	if (i < Short.MAX_VALUE * 0.75) {
+				if (value > limit) {
+					value = limit;
+					limited++;
+				}
+		//	}
 			limitedAbleitung[i] = value;
-			
+
 		}
-		//HistoViz histoViz3 = new HistoViz();
-		//histoViz3.visualizeHistogram(ableitung, "limited Ableitung");
-		
+		// HistoViz histoViz3 = new HistoViz();
+		// histoViz3.visualizeHistogram(ableitung, "limited Ableitung");
 
 		// integrate albeitung;
-		 int[] integral = new int[matchedHistogram.length];
-		 int sum = offset;
-		 for(int i = 0; i < matchedHistogram.length; i++){
-			 sum += limitedAbleitung[i];
-			 integral[i] = sum;
-		 }
-		 //normalizeIntegral
-		 double factor = (double)Short.MAX_VALUE / integral[integral.length - 1];
-		 System.out.println(factor);
-		 for(int i = 0; i < integral.length; i++){
-			 integral[i] = (int) (integral[i] * factor);
-		 }
-		 //integral[0] = 0;
-		 
-		 System.out.println("limited: " + (double)limited / integral.length);
-		 System.out.println("original Zahl: " + matchedHistogram[(int) (Short.MAX_VALUE * 0.2)]);
-		 System.out.println("integrierte Zahl: " + integral[(int) (Short.MAX_VALUE * 0.2)]);
-		 System.out.println("original Zahl: " + matchedHistogram[(int) (Short.MAX_VALUE * 0.5)]);
-		 System.out.println("integrierte Zahl: " + integral[(int) (Short.MAX_VALUE * 0.5)]);
-		 System.out.println("original Zahl: " + matchedHistogram[(int) (Short.MAX_VALUE )]);
-		 System.out.println("integrierte Zahl: " + integral[(int) (Short.MAX_VALUE)]);
+		int[] integral = new int[matchedHistogram.length];
+		int sum = offset;
+		for (int i = 0; i < matchedHistogram.length; i++) {
+			sum += limitedAbleitung[i];
+			integral[i] = sum;
+		}
+		// normalizeIntegral
+		double factor = (double) Short.MAX_VALUE / integral[integral.length - 1];
+		System.out.println(factor);
+		for (int i = 0; i < integral.length; i++) {
+			integral[i] = (int) (integral[i] * factor);
+		}
+		// integral[0] = 0;
 
-		
+		// System.out.println("limited: " + (double)limited / integral.length);
+		// System.out.println("original Zahl: " + matchedHistogram[(int)
+		// (Short.MAX_VALUE * 0.2)]);
+		// System.out.println("integrierte Zahl: " + integral[(int)
+		// (Short.MAX_VALUE * 0.2)]);
+		// System.out.println("original Zahl: " + matchedHistogram[(int)
+		// (Short.MAX_VALUE * 0.5)]);
+		// System.out.println("integrierte Zahl: " + integral[(int)
+		// (Short.MAX_VALUE * 0.5)]);
+		// System.out.println("original Zahl: " + matchedHistogram[(int)
+		// (Short.MAX_VALUE )]);
+		// System.out.println("integrierte Zahl: " + integral[(int)
+		// (Short.MAX_VALUE)]);
+
 		HistoViz histoViz2 = new HistoViz();
 		histoViz2.visualizeHistogram(integral, "Integral");
 		return integral;

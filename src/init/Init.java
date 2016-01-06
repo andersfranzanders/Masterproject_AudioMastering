@@ -32,7 +32,7 @@ import audioHelpers.AudioStreamConverter;
 
 public class Init {
 
-	String outFileName = "resources/freedom_whole_mastering 05.wav";
+	String outFileName = "resources/entNoising_test 14.wav";
 	File fileOut = new File(outFileName);
 
 	Limiter limiter = new Limiter();
@@ -64,11 +64,12 @@ public class Init {
 
 		int[][] audioToFilter = produceAudio(fileNameToFilter);
 		int[][] aimSpecAudio = produceAudio(aimSpecFileName);
+		normalizer.normalize(audioToFilter);
 		int[][] filteredSignal = testAutomaticFiltering(audioToFilter, aimSpecAudio);
 
 		compressor.histogramMatching(filteredSignal, aimSpecAudio);
 
-		writeFileToDrive(filteredSignal);
+		writeFileToDrive(audioToFilter);
 
 	}
 
