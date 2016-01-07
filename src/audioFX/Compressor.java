@@ -77,6 +77,19 @@ public class Compressor extends AudioFX {
 		return Short.MAX_VALUE;
 	}
 
+	private short calculateLimiterPositionNew(int[][] x, double percentageToCut, int[] histogram) {
+		int aimNumber = (int) (percentageToCut * x[0].length);
+		int counter = 0;
+		for (int i = (histogram.length - 1); i >= 0; i--) {
+			counter += histogram[i];
+			if (counter >= aimNumber) {
+				return (short) i;
+			}
+
+		}
+		return Short.MAX_VALUE;
+	}
+
 	public int[] createHistogram(int[][] x, int channel) {
 		int[] histogram = new int[Short.MAX_VALUE + 1];
 
@@ -165,12 +178,12 @@ public class Compressor extends AudioFX {
 		int[] limitedAbleitung = new int[ableitung.length];
 		for (int i = 0; i < ableitung.length; i++) {
 			int value = ableitung[i];
-		//	if (i < Short.MAX_VALUE * 0.75) {
-				if (value > limit) {
-					value = limit;
-					limited++;
-				}
-		//	}
+			// if (i < Short.MAX_VALUE * 0.75) {
+			if (value > limit) {
+				value = limit;
+				limited++;
+			}
+			// }
 			limitedAbleitung[i] = value;
 
 		}
@@ -234,9 +247,11 @@ public class Compressor extends AudioFX {
 		for (int i = 0; i < cumulativeHistogramX.length; i++) {
 			double value = cumulativeHistogramX[i];
 			int foundValue = Short.MAX_VALUE;
-			for (int h = 0; h < cumulativeHistogramY.length; h++) {
+			// for (int h = 0; h < cumulativeHistogramY.length; h++) {
+			for (int h = 1; h < cumulativeHistogramY.length; h++) {
 				if (cumulativeHistogramY[h] > value) {
 					double ding1 = cumulativeHistogramY[h] - value;
+
 					double ding2 = value - cumulativeHistogramY[h - 1];
 					if (ding1 > ding2) {
 						foundValue = h - 1;
@@ -330,6 +345,45 @@ public class Compressor extends AudioFX {
 		for (int i = 0; i < histogram.length; i++) {
 			histogram[i] = histogram[i] + distribution;
 		}
+
+	}
+
+	public void prelimitSignal(int[][] x, int[][] y) {
+		Normalizer normalizer = new Normalizer();
+		normalizer.normalize(x);
+		normalizer.normalize(y);
+
+		RMSCalculator rmsCal = new RMSCalculator();
+		System.out.println((rmsCal.calculateRMS(x) / rmsCal.calculateRMS(y)));
+		if ((rmsCal.calculateRMS(x) / rmsCal.calculateRMS(y)) < 0.3d) {
+			System.out.println("Limiting small Peaks!!");
+			limitSmallPeaks2(x, 0.0001);
+			normalizer.normalize(x);
+		}
+
+	}
+
+	private void limitSmallPeaks2(int[][] x, double percentageToCut) {
+
+		int[] histogramLeft = createHistogram(x, 0);
+		int[] histogramRight = createHistogram(x, 1);
+		short limiterPositionLeft = calculateLimiterPositionNew(x, percentageToCut, histogramLeft);
+		short limiterPositionRight = calculateLimiterPositionNew(x, percentageToCut, histogramRight);
+		System.out.println("Short Max: " + Short.MAX_VALUE);
+		System.out.println("Left Limiter Pos: " + limiterPositionLeft);
+		System.out.println("Right Limiter Pos: " + limiterPositionRight);
+		float finalLimiterPosition = 1.0f;
+		if (limiterPositionLeft > limiterPositionRight) {
+			System.out.println("Taking Left Limiterposition");
+			finalLimiterPosition = (float) (limiterPositionLeft / (float) Short.MAX_VALUE);
+		} else {
+			System.out.println("Taking Right Limiterposition");
+			finalLimiterPosition = (float) (limiterPositionRight / (float) Short.MAX_VALUE);
+		}
+		System.out.println("Will limit at: " + finalLimiterPosition);
+
+		Limiter limiter = new Limiter();
+		limiter.limit(x, finalLimiterPosition);
 
 	}
 }

@@ -32,7 +32,7 @@ import audioHelpers.AudioStreamConverter;
 
 public class Init {
 
-	String outFileName = "resources/entNoising_test 14.wav";
+	String outFileName = "resources/out/notHelpin_master 01.wav";
 	File fileOut = new File(outFileName);
 
 	Limiter limiter = new Limiter();
@@ -56,20 +56,21 @@ public class Init {
 		// String fileName = "resources/LPP.wav";
 		// String fileNameToFilter = "resources/DK2_126_WKicks22.wav";
 		// String aimSpecFileName = "resources/DK2_126_001_WoKicks22.wav";
-		String fileNameToFilter = "resources/freedom_whole 01.wav";
-		String aimSpecFileName = "resources/alexa_short 01.wav";
+		String fileNameToFilter = "resources/notHelping_whole 01.wav";
+		String aimSpecFileName = "resources/control_whole 01.wav";
 		// String fileNameToFilter = "resources/WorkD.wav";
 		// String aimSpecFileName = "resources/WorkD.wav";
 		// String fileNameToFilter = "";
 
 		int[][] audioToFilter = produceAudio(fileNameToFilter);
 		int[][] aimSpecAudio = produceAudio(aimSpecFileName);
-		normalizer.normalize(audioToFilter);
+		compressor.prelimitSignal(audioToFilter, aimSpecAudio);
+		
 		int[][] filteredSignal = testAutomaticFiltering(audioToFilter, aimSpecAudio);
 
 		compressor.histogramMatching(filteredSignal, aimSpecAudio);
 
-		writeFileToDrive(audioToFilter);
+		writeFileToDrive(filteredSignal);
 
 	}
 
