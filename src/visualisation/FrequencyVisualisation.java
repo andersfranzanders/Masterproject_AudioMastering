@@ -10,88 +10,69 @@ import visualisation.AudioVisualisation.MyPanel;
 
 public class FrequencyVisualisation {
 
-	
 	int windowLength;
 	int windowHeight = 400;
-	
-	public void visualizeAudio(int[] frequData){
-		
+
+	public void visualizeAudio(double[] frequData) {
+
 		JFrame jFrame = new JFrame();
 		jFrame.setBackground(Color.BLACK);
 		FrequPanel panel = new FrequPanel(frequData);
 		jFrame.add(panel);
 		windowLength = frequData.length;
 
-		
-		jFrame.setSize(windowLength, windowHeight+25);
+		jFrame.setSize(windowLength, windowHeight + 25);
 		jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jFrame.setVisible(true);
-		
+
 	}
-	
-class FrequPanel extends JPanel{
-		
-		int[] frequData;
-		
-		FrequPanel(int[] frequData){
+
+	class FrequPanel extends JPanel {
+
+		double[] frequData;
+
+		FrequPanel(double[] frequData) {
 			this.frequData = frequData;
 			this.setBackground(Color.BLACK);
 			this.setOpaque(true);
 		}
-		
-		 public void paintComponent(Graphics g){
-			 
-			 g.setColor(Color.WHITE);
-			 
-			 int frequPoint = 0;
-			 int numberOfFrequPoints = frequData.length;
-			 int jumpFrequPoints = numberOfFrequPoints / windowLength;
-			 //System.out.println(jumpFrequPoints);
-			 
-			// int maxFrequ = calculateMaxFrequ(jumpFrequPoints);
-			// System.out.println(calculateMaxFrequ(jumpFrequPoints) - Short.MAX_VALUE);
-			 int maxFrequ = 512 * Short.MAX_VALUE;
-			// System.out.println("MAx : " + maxFrequ);
-			 
-			 for(int i = 0; i < windowLength-1; i++){
-				 
-				 int frequAmp = frequData[frequPoint];
-				
-				 
 
-					 frequPoint++;
+		public void paintComponent(Graphics g) {
 
-				 //System.out.print(frequAmp + " ");
-				 int height = (int) ( windowHeight * (((double)frequAmp /maxFrequ) ));
-				// System.out.println(height);
-				 //System.out.println(height);
-				 
-				int iToDraw = (int) ((double)55* Math.log(i)/Math.log(2));
-				int nextIToDraw = (int) ((double)55* Math.log(i+1)/Math.log(2));
-				 
-				// g.drawLine(iToDraw, 400, iToDraw, 400-height);
-				 g.fillRect(iToDraw, 400 - height, nextIToDraw - iToDraw, height);
-			 }
-			// g.drawRect(0, 10, 50, 90);
-			 //g.drawLine(50, 400, 50, 200);
-			// g.drawLine(0, 100, windowLength, 100);
-		 }
+			g.setColor(Color.WHITE);
 
-		private int calculateMaxFrequ(int jumpFrequPoints) {
+			int frequPoint = 0;
+			double hightestSample = normalizeFreqData();
 			
-			int maxValue = 0;
-			for (int i = 0; i < frequData.length; i++){
-				int value = frequData[i];
-				// for (int j = 0; j < jumpFrequPoints;j++){
-					// i++;
-				 //}
-				if (value > maxValue){
-					maxValue = value;
+			for (int i = 0; i < windowLength - 1; i++) {
+
+				double frequAmp = frequData[frequPoint];
+
+				frequPoint++;
+
+				int height = (int) ((double)(windowHeight-10) / hightestSample * (frequAmp));
+				int iToDraw = i;
+				int nextIToDraw = i+1;
+				
+				//int iToDraw = (int) ((double) 55 * Math.log(i) / Math.log(2));
+				//int nextIToDraw = (int) ((double) 55 * Math.log(i + 1) / Math.log(2));
+
+				g.fillRect(iToDraw, 400 - height, nextIToDraw - iToDraw, height);
+			}
+
+		}
+
+		private double normalizeFreqData() {
+			double best = 0;
+			for(Double i: frequData){
+				if(i>best){
+					best = i;
 				}
 			}
-			return maxValue;
+			
+			return best;
+			
 		}
-		
-		
+
 	}
 }

@@ -62,7 +62,7 @@ public class SpectralAnalyzer extends AudioFX {
 		return paddedAudio;
 	}
 
-	private Complex[] calRectangularFFT(int[][] audio, int lengthOfFFT, int segmentNumber, int channel) {
+	public Complex[] calRectangularFFT(int[][] audio, int lengthOfFFT, int segmentNumber, int channel) {
 
 		Complex[] audioAsComplex = new Complex[lengthOfFFT];
 		for (int i = 0; i < lengthOfFFT; i++) {

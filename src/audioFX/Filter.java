@@ -6,6 +6,7 @@ import java.util.List;
 import audioHelpers.AudioStreamConverter;
 import other.Complex;
 import other.FFT;
+import other.ZPoint;
 import visualisation.NumericalVisualizer;
 
 public class Filter {
@@ -19,6 +20,57 @@ public class Filter {
 
 	}
 
+	public double[] getZeroeFactorsForBiQuad(double r, double angle) {
+
+		double[] a = new double[3];
+		a[0] = 1;
+		a[1] = -2 * r * Math.cos(angle);
+		a[2] = Math.pow(r, 2);
+
+		return a;
+	}
+
+	public double[] getPoleFactorsForBiQuad(double r, double angle) {
+
+		double[] b = new double[3];
+		b[0] = 2 * r * Math.cos(angle);
+		b[1] = -Math.pow(r, 2);
+
+		return b;
+	}
+
+	public double[][] filterbyIIR(int[][] x, double[] aFaktors, double[] bFaktors) {
+
+		double[][] y = new double[x.length][x[0].length];
+		for (int channel = 0; channel < 2; channel++) {
+			for (int i = 0; i < x[0].length; i++) {
+				y[channel][i] = 0;
+
+				int samplePos = 0;
+				if (aFaktors != null) {
+					for (Double a : aFaktors) {
+						if (i - samplePos >= 0) {
+							y[channel][i] = y[channel][i] + (a * (double) x[channel][i - samplePos]);
+							samplePos++;
+						}
+					}
+				}
+				if (bFaktors != null) {
+					samplePos = 1;
+					for (Double b : bFaktors) {
+						if (i - samplePos >= 0) {
+							y[channel][i] = y[channel][i] + (b * y[channel][i - samplePos]);
+							samplePos++;
+						}
+					}
+				}
+
+			}
+		}
+		return y;
+	}
+	
+
 	private Complex[] multPolarSpectrums(Complex[] signalSpectrum, Complex[] kernelSpectrum) {
 
 		if (signalSpectrum.length != kernelSpectrum.length) {
@@ -31,11 +83,10 @@ public class Filter {
 			double phase = signalSpectrum[i].im() + kernelSpectrum[i].im();
 			multiplicatedSpectrum[i] = new Complex(mag, phase);
 		}
-		
 
 		return multiplicatedSpectrum;
 	}
-	
+
 	private Complex[] multPolarSpectrums2(Complex[] signalSpectrum, Complex[] kernelSpectrum) {
 
 		if (signalSpectrum.length != kernelSpectrum.length) {
@@ -45,9 +96,8 @@ public class Filter {
 		for (int i = 0; i < signalSpectrum.length; i++) {
 			signalSpectrum[i].setRe(signalSpectrum[i].re() * kernelSpectrum[i].re());
 			signalSpectrum[i].setIm(signalSpectrum[i].im() + kernelSpectrum[i].im());
-			
+
 		}
-		
 
 		return signalSpectrum;
 	}
@@ -56,7 +106,8 @@ public class Filter {
 		List<Complex[]> wholeMultiplicatedSignal = new ArrayList<Complex[]>();
 
 		for (Complex[] polarSpecSegment : wholeSongAsSpecSegments) {
-			//Complex[] multiplicatedSegment = multPolarSpectrums(polarSpecSegment, polarSpecOfKernel);
+			// Complex[] multiplicatedSegment =
+			// multPolarSpectrums(polarSpecSegment, polarSpecOfKernel);
 			Complex[] multiplicatedSegment = multPolarSpectrums2(polarSpecSegment, polarSpecOfKernel);
 			wholeMultiplicatedSignal.add(multiplicatedSegment);
 		}
@@ -67,6 +118,7 @@ public class Filter {
 	public int[][] filterSongByFFTConvolution(int[][] audio, double[] filterKernel, int lengthOfFFT) {
 
 		Complex[] polarSpecOfKernel = spectralAnalyzer.getPolarSpectrumOfFilterKernel(filterKernel);
+
 		List<Complex[]> wholeLeftChannelAsSpecSegments = spectralAnalyzer.turnWholeAudioInPolarSpecSegments(audio,
 				lengthOfFFT, 0);
 		List<Complex[]> wholeRightChannelAsSpecSegments = spectralAnalyzer.turnWholeAudioInPolarSpecSegments(audio,
@@ -106,8 +158,10 @@ public class Filter {
 		// produce spectrums of audioToFilter, aimSong and the filterkernel;
 		Complex[] averagedY = spectralAnalyzer.getAveragedPolarSpectrum(y, lengthOfFFT);
 		System.out.println("calculated Average of song 1");
+
 		Complex[] averagedX = spectralAnalyzer.getAveragedPolarSpectrum(x, lengthOfFFT);
 		System.out.println("calculated Average of song 2");
+
 		Complex[] tempH = dividePolarSpectrums(averagedY, averagedX);
 		System.out.println("calculated Average Spectrums. begin filtering song");
 
@@ -119,19 +173,27 @@ public class Filter {
 		// generate the Filterkernel
 		double[] temp_h = spectralAnalyzer.calInverseFFTofPolarSpectrum(tempH);
 		// double[] h = generateCustomFilterKernel(temp_h, 60);
-		double[] h = generateCustomFilterKernelWithPadding(temp_h, 60, lengthOfFFT*2);
-
+		double[] h = generateCustomFilterKernelWithPadding(temp_h, 60, lengthOfFFT * 2);
+		System.gc();
 		// Filter the Signal
-		//double[][] xAsDouble = converter.convertIntToDoubleSignal(x);
-		//double[][] filtered_x = convoluter.convolute(xAsDouble, h);
-		//int[][] finalAudio = converter.convertDoubleToIntSignal(filtered_x);
-		
+		// double[][] xAsDouble = converter.convertIntToDoubleSignal(x);
+		// double[][] filtered_x = convoluter.convolute(xAsDouble, h);
+		// int[][] finalAudio = converter.convertDoubleToIntSignal(filtered_x);
+
 		int[][] finalAudio = filterSongByFFTConvolution(x, h, lengthOfFFT);
 		System.out.println("filtered song");
 
-
 		return finalAudio;
 
+	}
+
+	private void show(Complex[] c) {
+		System.out.println("--------------------------");
+		for (Complex comp : c) {
+			System.out.println((int) (comp.re() / c.length));
+			// System.out.println((int)(comp.re()*100));
+		}
+		System.out.println("--------------------------");
 	}
 
 	private double[] generateCustomFilterKernelWithPadding(double[] temp_h, int kernelLengthWithoutPadding,
@@ -141,9 +203,9 @@ public class Filter {
 
 		double[] h = new double[kernelLengthWithPadding];
 		for (int i = 0; i < kernelLengthWithPadding; i++) {
-			if(i < kernelLengthWithoutPadding){
+			if (i < kernelLengthWithoutPadding) {
 				h[i] = hWithoutPadding[i];
-			}else{
+			} else {
 				h[i] = 0;
 			}
 		}

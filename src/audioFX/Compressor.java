@@ -104,16 +104,18 @@ public class Compressor extends AudioFX {
 	}
 
 	public void histogramMatching(int[][] x, int[][] y) {
-
+		RMSCalculator rms = new RMSCalculator();
+		
 		Normalizer normalizer = new Normalizer();
 		normalizer.normalize(x);
 		normalizer.normalize(y);
-
+		System.out.println("RMS of X before " + rms.calculateRMS(x));
+		
 		matchingForChannel(x, y, 0);
 		matchingForChannel(x, y, 1);
 
-		RMSCalculator rms = new RMSCalculator();
-		System.out.println("RMS of X " + rms.calculateRMS(x));
+		
+		System.out.println("RMS of X after" + rms.calculateRMS(x));
 		System.out.println("RMS of Y " + rms.calculateRMS(y));
 
 	}
@@ -129,7 +131,7 @@ public class Compressor extends AudioFX {
 		histoViz.visualizeHistogram(matchedHistogramOfX, "Originale Transferfunction");
 		int[] decreasedHisto = decreaseSlopeOfTranserFunction(matchedHistogramOfX, 2);
 		int[] entNoisedTransfer = decreaseNoiseOfTranserFunction(decreasedHisto, 3);
-
+		
 		applyMatchedHistogram(x, entNoisedTransfer, channel);
 	}
 

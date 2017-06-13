@@ -32,9 +32,15 @@ import audioHelpers.AudioStreamConverter;
 
 public class Init {
 
-	String outFileName = "resources/out/notHelpin_master 01.wav";
-	File fileOut = new File(outFileName);
-
+	//Put in Here the Names of the inputsong, the referenzsong, and the outputsongs.
+	//The Songs need to be in .wav-Format with 16-Bit depth and a samplingrate of 44100 kHz.
+	//String outFileName = "resources/lpp_out/LPP - Bendecido seas tu (Remix) (burnitshort).wav";
+	//String fileNameToFilter = "resources/lpp_ungemastert/LPP - Bendecido seas tu (Remix).wav";
+	//String aimSpecFileName = "resources/lpp_ungemastert/Burn It Up_short.wav";
+	
+	
+	
+	
 	Limiter limiter = new Limiter();
 	Normalizer normalizer = new Normalizer();
 	AudioStreamConverter converter = new AudioStreamConverter();
@@ -51,32 +57,26 @@ public class Init {
 	CumulativeHistoViz cumHistoViz = new CumulativeHistoViz();
 	Filter filter = new Filter();
 
-	public void start() throws UnsupportedAudioFileException, IOException, AudioFormatNotSupportedException {
-		// String fileName = "resources/Keule.wav";
-		// String fileName = "resources/LPP.wav";
-		// String fileNameToFilter = "resources/DK2_126_WKicks22.wav";
-		// String aimSpecFileName = "resources/DK2_126_001_WoKicks22.wav";
-		String fileNameToFilter = "resources/notHelping_whole 01.wav";
-		String aimSpecFileName = "resources/control_whole 01.wav";
-		// String fileNameToFilter = "resources/WorkD.wav";
-		// String aimSpecFileName = "resources/WorkD.wav";
-		// String fileNameToFilter = "";
+	public void start(String fileNameToFilter,String aimSpecFileName, String outFileName) throws UnsupportedAudioFileException, IOException, AudioFormatNotSupportedException {
 
 		int[][] audioToFilter = produceAudio(fileNameToFilter);
 		int[][] aimSpecAudio = produceAudio(aimSpecFileName);
-		compressor.prelimitSignal(audioToFilter, aimSpecAudio);
 		
+		
+		compressor.prelimitSignal(audioToFilter, aimSpecAudio);
 		int[][] filteredSignal = testAutomaticFiltering(audioToFilter, aimSpecAudio);
 
 		compressor.histogramMatching(filteredSignal, aimSpecAudio);
 
-		writeFileToDrive(filteredSignal);
+		writeFileToDrive(filteredSignal, outFileName);
 
 	}
 
-	private void writeFileToDrive(int[][] filteredSignal) throws IOException {
+	private void writeFileToDrive(int[][] filteredSignal, String outFileName) throws IOException {
 		System.out.println("writing to drive");
 		AudioInputStream outStream = converter.convertIntArrayToAIS(filteredSignal);
+		
+		File fileOut = new File(outFileName);
 		AudioSystem.write(outStream, AudioFileFormat.Type.WAVE, fileOut);
 	}
 
@@ -101,6 +101,7 @@ public class Init {
 		// normalizer.normalize(audio2, Short.MAX_VALUE, 0.2);
 
 		return filter.automaticallyAdaptSpectrum(audio1, audio2, (int) Math.pow(2, 11));
+		
 
 	}
 

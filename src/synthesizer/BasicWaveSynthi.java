@@ -13,15 +13,49 @@ public class BasicWaveSynthi {
 		for (int sample = 0; sample < audio[0].length; sample++) {
 			for (int channel = 0; channel < 2; channel++) {
 				if (sample % period < (period / 2)) {
-					audio[channel][sample] = Short.MAX_VALUE;
+					audio[channel][sample] = 1;
 				} else {
-					audio[channel][sample] = Short.MIN_VALUE;
+					audio[channel][sample] = -1;
 				}
 			}
 		}
 
 		return audio;
 	}
+	
+	public double[][] synthesizeDiracImpulse(int maxValue, int numSamples) {
+
+		double[][] audio = new double[2][numSamples];
+		for (int sample = 0; sample < audio[0].length; sample++) {
+			for (int channel = 0; channel < 2; channel++) {
+				if(sample == 0){
+					audio[channel][sample] = maxValue;
+				}else{
+					audio[channel][sample] = 0;
+				}
+			}
+		}
+		
+		return audio;
+
+	}
+	public int[][] synthesizeDiracImpulseInt(int maxValue, int numSamples) {
+
+		int[][] audio = new int[2][numSamples];
+		for (int sample = 0; sample < audio[0].length; sample++) {
+			for (int channel = 0; channel < 2; channel++) {
+				if(sample == 0){
+					audio[channel][sample] = maxValue;
+				}else{
+					audio[channel][sample] = 0;
+				}
+			}
+		}
+		
+		return audio;
+
+	}
+
 
 	public double[][] synthesizeDiracImpulse(int maxValue, double timeInSec) {
 
